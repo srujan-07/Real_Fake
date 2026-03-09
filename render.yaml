@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: real-fake-ctf
+    runtime: python
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLAG
+        value: CrackOn{Pr3petu4l_hash3s_l00k_c00l}
+    healthCheckPath: /health

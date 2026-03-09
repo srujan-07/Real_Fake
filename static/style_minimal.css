@@ -1,0 +1,533 @@
+/* ============================================================================
+   MINIMAL BLACK & WHITE DESIGN
+   ============================================================================ */
+
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9f9f9;
+    --text-primary: #000000;
+    --text-secondary: #666666;
+    --border-color: #cccccc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+.particles {
+    display: none;
+}
+
+.particle {
+    display: none;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    gap: 30px;
+}
+
+.header {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    padding: 20px;
+    text-align: center;
+}
+
+.title-container {
+    text-align: center;
+}
+
+.title-container h1 {
+    font-size: 1.8em;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.title-container p {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.status-display {
+    display: none;
+}
+
+.status-label {
+    display: none;
+}
+
+.status-value {
+    display: none;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.state {
+    display: none;
+    width: 100%;
+}
+
+.state.active {
+    display: block;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.welcome-box {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.welcome-box h2 {
+    font-size: 1.6em;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.lore {
+    color: var(--text-primary);
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+    text-align: justify;
+}
+
+.btn {
+    padding: 10px 20px;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+    font-size: 0.9em;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    border: 1px solid var(--text-primary);
+    border-radius: 0px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.btn:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--bg-primary);
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+.btn-secondary {
+    background-color: var(--bg-primary);
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+.btn-danger {
+    background-color: var(--bg-primary);
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.btn-danger:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+/* ============================================================================
+   LOADING STATE
+   ============================================================================ */
+
+.loading-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--text-primary);
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-primary);
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   CHALLENGE STATE
+   ============================================================================ */
+
+.challenge-header {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--text-primary);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.progress-text {
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    text-align: center;
+}
+
+/* ============================================================================
+   SWIPE CARD INTERFACE
+   ============================================================================ */
+
+.swipe-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.swipe-hint-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.hint-left {
+    flex: 1;
+    text-align: left;
+}
+
+.hint-right {
+    flex: 1;
+    text-align: right;
+}
+
+.swipe-stage {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 4 / 5;
+    position: relative;
+}
+
+.swipe-card {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+}
+
+.swipe-card:active {
+    cursor: grabbing;
+}
+
+.swipe-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.swipe-overlay {
+    position: absolute;
+    top: 15px;
+    padding: 8px 12px;
+    border: 1px solid var(--text-primary);
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 0.9em;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.swipe-overlay.left {
+    left: 15px;
+}
+
+.swipe-overlay.right {
+    right: 15px;
+}
+
+.swipe-index {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 10px;
+    font-size: 0.8em;
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.swipe-actions {
+    width: 100%;
+    max-width: 400px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.swipe-actions .btn {
+    margin-top: 0;
+}
+
+.swipe-finished {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    border: 1px dashed var(--border-color);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    background-color: var(--bg-secondary);
+}
+
+/* ============================================================================
+   SUBMIT SECTION
+   ============================================================================ */
+
+.submit-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.hint {
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+/* ============================================================================
+   RESULTS STATE
+   ============================================================================ */
+
+.results-container {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.results-container h2 {
+    font-size: 1.6em;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    font-weight: bold;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.result-card {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    padding: 20px;
+    text-align: center;
+}
+
+.result-label {
+    color: var(--text-secondary);
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+.result-value {
+    font-size: 2em;
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.flag-container {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--text-primary);
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.flag-label {
+    color: var(--text-primary);
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.flag-text {
+    color: var(--text-primary);
+    font-size: 1em;
+    font-weight: bold;
+    word-break: break-all;
+    letter-spacing: 0.5px;
+    font-family: monospace;
+}
+
+.failure-message {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--text-primary);
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.failure-message p {
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 15px;
+        gap: 20px;
+    }
+
+    .welcome-box,
+    .results-container {
+        padding: 25px;
+    }
+
+    .swipe-hint-row {
+        font-size: 0.75em;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px 10px;
+    }
+
+    .title-container h1 {
+        font-size: 1.4em;
+    }
+
+    .swipe-actions {
+        grid-template-columns: 1fr;
+    }
+}
