@@ -12,6 +12,7 @@ import json
 import time
 import hashlib
 import threading
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from io import BytesIO
@@ -20,11 +21,16 @@ import numpy as np
 import imagehash
 from PIL import Image, ImageDraw, ImageFont
 
-from flask import Flask, jsonify, send_file, request, render_template
+from flask import Flask, jsonify, send_file, request, render_template, Response
 from functools import wraps
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+
+# Configure logging for production
+if not app.debug:
+    logging.basicConfig(level=logging.INFO)
+    app.logger.setLevel(logging.INFO)
 
 # ============================================================================
 # CONFIGURATION & CONSTANTS
@@ -219,6 +225,23 @@ def health():
     """Health check endpoint"""
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
+@app.route("/api/debug/images", methods=["GET"])
+def debug_images():
+    """Debug endpoint to check image availability"""
+    real_images, fake_images = get_image_files()
+    
+    return jsonify({
+        "real_count": len(real_images),
+        "fake_count": len(fake_images),
+        "total": len(real_images) + len(fake_images),
+        "real_dir_exists": ARTIFACT_REAL_DIR.exists(),
+        "fake_dir_exists": ARTIFACT_FAKE_DIR.exists(),
+        "real_dir_path": str(ARTIFACT_REAL_DIR),
+        "fake_dir_path": str(ARTIFACT_FAKE_DIR),
+        "sample_real": real_images[:3] if real_images else [],
+        "sample_fake": fake_images[:3] if fake_images else []
+    })
+
 # ============================================================================
 # API ROUTES - SESSION MANAGEMENT
 # ============================================================================
@@ -285,59 +308,77 @@ def get_artifact(artifact_id):
     - Perceptual hash remains similar
     """
     
-    # Find which session and artifact this is
-    found_session = None
-    artifact_index = None
-    
-    with session_lock:
-        for sid, session_obj in sessions.items():
-            for idx, artifact in enumerate(session_obj.artifacts):
-                if artifact["artifact_id"] == artifact_id:
-                    found_session = sid
-                    artifact_index = idx
-                    session_obj.update_access_time()
+    try:
+        # Find which session and artifact this is
+        found_session = None
+        artifact_index = None
+        
+        with session_lock:
+            for sid, session_obj in sessions.items():
+                for idx, artifact in enumerate(session_obj.artifacts):
+                    if artifact["artifact_id"] == artifact_id:
+                        found_session = sid
+                        artifact_index = idx
+                        session_obj.update_access_time()
+                        break
+                if found_session:
                     break
-            if found_session:
-                break
-    
-    if not found_session or artifact_index is None:
-        return jsonify({"error": "Artifact not found"}), 404
-    
-    # Get the actual image filename from the session's artifact list
-    session_obj = sessions[found_session]
-    artifacts = session_obj.artifacts
-    
-    # Reconstruct which image this artifact corresponds to
-    real_images, fake_images = get_image_files()
-    all_images = real_images + fake_images
-    
-    np.random.seed(int(found_session.replace('-', ''), 16) % 2**32)
-    shuffled = np.random.permutation(all_images).tolist()
-    
-    original_filename = shuffled[artifact_index]
-    
-    # Determine if real or fake
-    if original_filename in real_images:
-        image_path = ARTIFACT_REAL_DIR / original_filename
-    else:
-        image_path = ARTIFACT_FAKE_DIR / original_filename
-    
-    # Load original image
-    image = load_image(str(image_path))
-    if not image:
-        return jsonify({"error": "Failed to load artifact"}), 500
-    
-    # Apply random transformations
-    transformed_image, buffer = apply_random_transformations(image)
-    
-    # Return the image
-    buffer.seek(0)
-    return send_file(
-        buffer,
-        mimetype='image/jpeg',
-        as_attachment=False,
-        download_name=f"artifact_{artifact_id}.jpg"
-    )
+        
+        if not found_session or artifact_index is None:
+            app.logger.warning(f"Artifact not found: {artifact_id}")
+            return jsonify({"error": "Artifact not found"}), 404
+        
+        # Get the actual image filename from the session's artifact list
+        session_obj = sessions[found_session]
+        artifacts = session_obj.artifacts
+        
+        # Reconstruct which image this artifact corresponds to
+        real_images, fake_images = get_image_files()
+        all_images = real_images + fake_images
+        
+        if not all_images:
+            app.logger.error("No images found in artifacts directories!")
+            return jsonify({"error": "Image dataset not available"}), 500
+        
+        np.random.seed(int(found_session.replace('-', ''), 16) % 2**32)
+        shuffled = np.random.permutation(all_images).tolist()
+        
+        original_filename = shuffled[artifact_index]
+        
+        # Determine if real or fake
+        if original_filename in real_images:
+            image_path = ARTIFACT_REAL_DIR / original_filename
+        else:
+            image_path = ARTIFACT_FAKE_DIR / original_filename
+        
+        # Verify image file exists
+        if not image_path.exists():
+            app.logger.error(f"Image file not found: {image_path}")
+            return jsonify({"error": "Image file not found"}), 500
+        
+        # Load original image
+        image = load_image(str(image_path))
+        if not image:
+            app.logger.error(f"Failed to load image: {image_path}")
+            return jsonify({"error": "Failed to load artifact"}), 500
+        
+        # Apply random transformations
+        transformed_image, buffer = apply_random_transformations(image)
+        
+        # Return the image with proper headers for production
+        buffer.seek(0)
+        image_data = buffer.read()
+        buffer.close()
+        
+        response = Response(image_data, mimetype='image/jpeg')
+        response.headers['Content-Disposition'] = f'inline; filename=artifact_{artifact_id}.jpg'
+        response.headers['Content-Length'] = len(image_data)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
+        
+    except Exception as e:
+        app.logger.error(f"Error serving artifact {artifact_id}: {str(e)}", exc_info=True)
+        return jsonify({"error": "Internal server error"}), 500
 
 # ============================================================================
 # API ROUTES - SCORING & VERIFICATION
