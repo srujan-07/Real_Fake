@@ -242,6 +242,26 @@ def debug_images():
         "sample_fake": fake_images[:3] if fake_images else []
     })
 
+@app.route("/api/debug/sessions", methods=["GET"])
+def debug_sessions():
+    """Debug endpoint to check active sessions"""
+    with session_lock:
+        session_info = []
+        for sid, session_obj in sessions.items():
+            session_info.append({
+                "session_id": sid[:8] + "...",
+                "artifacts_count": len(session_obj.artifacts),
+                "created_at": session_obj.created_at.isoformat(),
+                "last_accessed": session_obj.last_accessed.isoformat(),
+                "expired": session_obj.is_expired()
+            })
+        
+        return jsonify({
+            "total_sessions": len(sessions),
+            "sessions": session_info,
+            "note": "If this is 0, sessions aren't persisting (check worker config)"
+        })
+
 # ============================================================================
 # API ROUTES - SESSION MANAGEMENT
 # ============================================================================
@@ -325,7 +345,8 @@ def get_artifact(artifact_id):
                     break
         
         if not found_session or artifact_index is None:
-            app.logger.warning(f"Artifact not found: {artifact_id}")
+            app.logger.warning(f"Artifact not found: {artifact_id}. Active sessions: {len(sessions)}")
+            app.logger.debug(f"Available session IDs: {list(sessions.keys())[:3]}")
             return jsonify({"error": "Artifact not found"}), 404
         
         # Get the actual image filename from the session's artifact list
@@ -479,6 +500,13 @@ ARTIFACT_FAKE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Initialize the application
 initialize_dataset()
+
+# Log worker configuration warning
+app.logger.info("=" * 60)
+app.logger.info("IMPORTANT: This app uses in-memory sessions")
+app.logger.info("For production, use --workers 1 --threads N")
+app.logger.info("Multiple workers will cause session sync issues!")
+app.logger.info("=" * 60)
 
 if __name__ == "__main__":
     # Development server only
