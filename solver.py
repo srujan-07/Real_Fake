@@ -27,7 +27,7 @@ from typing import Dict, Tuple
 import os
 
 # Configuration
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = "https://real-fake-ctf.onrender.com/"
 DELAY_BETWEEN_REQUESTS = 0.06  # Respect rate limiting (50ms + safety margin)
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
